@@ -1,0 +1,50 @@
+
+
+$primaryFont: "Playfair Display";
+$secondaryFont: "Avenir", sans-serif;
+
+// COLOR PALETTE
+$primaryColor: #071152;
+$secondaryColor: #071152;
+$lightBlue: #D1DCEF;
+$middleBlue: #6275F9;
+$lightGray: #f5f5f5;
+$darkGray: #707070;
+$hoverGray: #ededed;
+$gradient: linear-gradient(to right, #FF7A07 20%, #FF0576 80%);
+$vgradient: linear-gradient(to bottom, #FF7A07 20%, #FF0576 80%);
+
+$pink: #FF0576;
+$orange: #FF7A07;
+
+$color1: #708B12;
+$color2: #005042;
+$color3: #00384F;
+$color4: #006F98;
+$color5: #164194;
+$color6: #510E33;
+$color7: #8E2F88;
+$color8: #790920;
+
+
+//Padding left e right per mobile
+$paddingMobile: 15px;
+$heightMobile: 60px;
+$heightDesktop: 100px;
+$stepHeight: 120px;
+
+//LAYOUT
+$container-breakpoints-xs: 576px;
+$container-breakpoints-sm: 768px;
+$container-breakpoints-md: 992px;
+$container-breakpoints-lg: 1024px;
+$container-breakpoints-xl: 1200px;
+$container-breakpoints-xxl: 1500px;
+
+$container-max-widths-sm: 540px;
+$container-max-widths-md: 720px;
+$container-max-widths-lg: 960px;
+$container-max-widths-xl: 1140px;
+$container-max-widths-xxl: 1400px;
+
+$padding-container-sm: 15px;
