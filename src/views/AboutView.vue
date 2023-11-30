@@ -2,18 +2,19 @@
   <div class="about">
     <div class="map" ref="map"></div>
 
-    <div class="legend">
+    <!-- <div class="legend">
       <div class="institutes">Institutes</div>
       <div class="cluster">Group of Institutes</div>
       <div class="labs">Laboratory</div>
-    </div>
+    </div> -->
 
     <div class="data">
-      <div>{{ this.totmembers }} Members</div>
-      <div>{{ this.totalumni }} Alumni</div>
-      <div>{{ this.totphds }} Phds</div>
-      <div>{{ this.institutes.length }} Institutes</div>
-      <div>{{ this.totlabs }} Laboratories</div>
+      <div @click="changeLayer('chapters')"><span class="num">{{ this.totchapters }}</span> National Chapters</div>
+      <div @click="zoomedto=='Africa' ? changeLayer('members') : null"><span class="num">{{ this.totmembers }}</span> Members</div>
+      <div @click="zoomedto=='Africa' ? changeLayer('alumni') : null"><span class="num">{{ this.totalumni }}</span> Alumni</div>
+      <div @click="zoomedto=='Africa' ? changeLayer('phds') : null"><span class="num">{{ this.totphds }}</span> Phds</div>
+      <div class="institute"><span class="num">{{ this.institutes.length }}</span> Institutes</div>
+      <div class="lab"><span class="num">{{ this.totlabs }}</span> Laboratories</div>
 
     </div>
 
@@ -33,7 +34,7 @@
       </div>
     </div> -->
 
-    <div class="button-filters-1">
+    <!-- <div class="button-filters-1">
       <h3 style="margin: 0">Heatmaps</h3>
       <button v-if="zoomedto!='SudAmerica'" @click="changeLayer('phds')">Phds</button>
       <button v-if="zoomedto!='SudAmerica'" @click="changeLayer('members')">Members</button>
@@ -44,7 +45,7 @@
       <button v-if="zoomedto == 'Africa'" @click="toggleLayerVisibility('africa-labs')">Labs</button>
       <button v-if="zoomedto == 'SudAmerica'" @click="toggleLayerVisibility('sudamerica-labs')">Labs</button>
       
-    </div>
+    </div> -->
 
     <div class="button-filters-3">
       <button class="btn-samerica" @click="goToSAmerica()">Sud America</button>
@@ -685,6 +686,11 @@ export default {
       Object.values(this.phds).forEach(v => sum = sum + v)
       return sum ? sum : '-'
     },
+    totchapters() {
+      let sum = 0
+      Object.values(this.chapters).forEach(v => sum = sum + v)
+      return sum ? sum : '-'
+    },
     totlabs() {
       let id = this.zoomedto == 'Africa' ? 'africa-labs' : 'sudamerica-labs'
       if(id && this.map) {
@@ -822,20 +828,33 @@ button.btn-samerica {
   gap: 10px;
 }
 
-.legend .institutes {
+.institute {
+  position: relative;
   background-image: url(../assets/institution.png);
-  background-position: left center;
-  background-size: 20px 20px;
-  padding-left: 30px;
+  background-position: right center;
+  background-size: 24px 24px;
+  padding-right: 30px;
   text-align: left;
   background-repeat: no-repeat;
 }
+.institute::after {
+  content: '';
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ecd041;
+  z-index: -1;
+}
 
-.legend .labs {
+.lab {
   background-image: url(../assets/lab.svg);
-  background-position: left center;
-  background-size: 20px 20px;
-  padding-left: 30px;
+  background-position: right center;
+  background-size: 24px 24px;
+  padding-right: 30px;
   text-align: left;
   background-repeat: no-repeat;
 }
@@ -856,14 +875,14 @@ button.btn-samerica {
   left: 0;
   transform: translateY(-50%);
   border-radius: 50%;
-
 }
 
 .data {
+  width: 300px;
   position: fixed;
-  bottom: 20rem;
+  bottom: 10rem;
   left: 1rem;
-  padding: 10px;
+  padding: 20px;
   box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
   background: #fff;
   display: flex;
@@ -873,4 +892,13 @@ button.btn-samerica {
   text-align: left;
 }
 
+.data div {
+  cursor: pointer;
+}
+
+.num {
+  display: inline-block;
+  width: 4rem;
+  font-weight: 700;
+}
 </style>
