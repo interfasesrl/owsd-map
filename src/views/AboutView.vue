@@ -15,7 +15,6 @@
       <div @click="zoomedto=='Africa' ? changeLayer('phds') : null"><span class="num">{{ this.totphds }}</span> Phds</div>
       <div class="institute"><span class="num">{{ this.institutes.length }}</span> Institutes</div>
       <div class="lab"><span class="num">{{ this.totlabs }}</span> Laboratories</div>
-
     </div>
 
     <!-- <div class="selected-country">
@@ -48,8 +47,8 @@
     </div> -->
 
     <div class="button-filters-3">
-      <button class="btn-samerica" @click="goToSAmerica()">Sud America</button>
-      <button class="btn-africa" @click="goToAfrica()">Africa</button>
+      <button class="btn-samerica" @click="goToArea('sudamerica')">Sud America</button>
+      <button class="btn-africa" @click="goToArea('africa')">Africa</button>
       <button @click="zoomout()">Zoom out</button>
     </div>
   </div>
@@ -70,24 +69,42 @@ export default {
     return {
       map: null,
       mapData: null,
-      zoomedto: "Africa",
+      minZoom: 2,
+      maxZoom: 7,
       boundariesColor: "#ecd041",
       baseMapColor: "#b0b0b0",
       hoverLineColor: "#ecd041",
-      selectedCountry: "",
+      displayHover: false,
+      hoveredStateId: null,
       mapR: 45,
       mapG: 134,
       mapB: 45,
-      supercluster: null,
-      bounds: null,
-      zoom: null,
-      minZoom: 2,
-      maxZoom: 7,
-      clusteredPoints: null,
-      displayHover: false,
+      institutesCluster: {
+        supercluster: null,
+        bounds: null,
+        zoom: null,
+        clusteredPoints: null,
+      },
+      zoomedto: "Africa",
+      selectedCountry: "",
       selectedCluster: [],
       visibleLayers: [],
-      hoveredStateId: null,
+      zoomedCoordinates: {
+        africa: {
+          center: [20, 0],
+          zoom: 3,
+          mapR: 45,
+          mapG: 134,
+          mapB: 45,
+        },
+        sudamerica: {
+          center: [-70, -15],
+          zoom: 2.6,
+          mapR: 0,
+          mapG: 153,
+          mapB: 204,
+        }
+      }
     };
   },
   methods: {
@@ -98,22 +115,22 @@ export default {
       })
     },
     clusterComputing(id) {
-      this.bounds = this.map.getBounds();
-      this.zoom = this.map.getZoom();
+      this.institutesCluster.bounds = this.map.getBounds();
+      this.institutesCluster.zoom = this.map.getZoom();
 
-      this.clusteredPoints = this.supercluster.getClusters(
+      this.institutesCluster.clusteredPoints = this.institutesCluster.supercluster.getClusters(
         [
-          this.bounds.getWest(),
-          this.bounds.getSouth(),
-          this.bounds.getEast(),
-          this.bounds.getNorth(),
+          this.institutesCluster.bounds.getWest(),
+          this.institutesCluster.bounds.getSouth(),
+          this.institutesCluster.bounds.getEast(),
+          this.institutesCluster.bounds.getNorth(),
         ],
-        this.zoom
+        this.institutesCluster.zoom
       );
 
       this.map.getSource(id).setData({
         type: "FeatureCollection",
-        features: this.clusteredPoints.map(({ geometry, properties }) => ({
+        features: this.institutesCluster.clusteredPoints.map(({ geometry, properties }) => ({
           type: "Feature",
           geometry,
           properties,
@@ -209,7 +226,7 @@ export default {
           break;
       }
     },
-    goToAfrica() {
+    /* goToAfrica() {
       this.map.flyTo({
         center: [20, 0],
         zoom: 3,
@@ -236,14 +253,44 @@ export default {
         this.map.setLayoutProperty('africa-labs', "visibility", "visible");
 
         let vm = this
-        this.supercluster.load(vm.institutes);
+        this.institutesCluster.supercluster.load(vm.institutes);
         this.pointsLayer();
       }
 
-    },
-    goToSAmerica() {
+    }, */
+    goToArea(name) {
+      let goto = this.zoomedCoordinates[name]
+
       this.map.flyTo({
-        center: [-70, -15],
+        center: goto.center,
+        zoom: goto.zoom,
+      });
+      this.mapR = goto.mapR;
+      this.mapG = goto.mapG;
+      this.mapB = goto.mapB;
+
+      if(name != this.zoomedTo) {
+        this.changeLayer('chapters')
+        this.map.removeLayer('state-stroke')
+        this.addBorders()
+        this.map.setPaintProperty('state-fills', 'fill-color', this.hoverMapColor);
+
+        this.map.removeLayer('institutes-points')
+        this.map.removeLayer('clusters')
+        this.map.removeLayer('cluster-count')
+
+        this.map.setLayoutProperty('sudamerica-labs', "visibility", "visible");
+        this.map.setLayoutProperty('africa-labs', "visibility", "none");
+        
+        this.institutesCluster.supercluster.load(this.institutes);
+        this.pointsLayer();
+      }
+
+      this.zoomedto = name;
+    },
+    /* goToSAmerica() {
+      this.map.flyTo({
+        center: ,
         zoom: 2.6,
       });
       this.mapR = 0;
@@ -268,10 +315,10 @@ export default {
         this.map.setLayoutProperty('africa-labs', "visibility", "none");
         
         let vm = this
-        this.supercluster.load(vm.institutes);
+        this.institutesCluster.supercluster.load(vm.institutes);
         this.pointsLayer();
       }
-    },
+    }, */
     pointsLayer() {
       let vm = this;
 
@@ -422,7 +469,7 @@ export default {
     buildMap() {
       var vm = this;
 
-      this.supercluster = new Supercluster({
+      this.institutesCluster.supercluster = new Supercluster({
         radius: 80,
         maxZoom: vm.maxZoom,
       });
@@ -524,7 +571,7 @@ export default {
         this.addBorders();
 
         this.colorCountries();
-        this.supercluster.load(this.institutes);
+        this.institutesCluster.supercluster.load(this.institutes);
         this.pointsLayer();
       });
 
@@ -692,14 +739,14 @@ export default {
       return sum ? sum : '-'
     },
     totlabs() {
-      let id = this.zoomedto == 'Africa' ? 'africa-labs' : 'sudamerica-labs'
+      let id = this.zoomedto == 'africa' ? 'africa-labs' : 'sudamerica-labs'
       if(id && this.map) {
         let features = this.map.queryRenderedFeatures({ layers: [id] });
         return features.length
       }
     },
     hoverMapColor() {
-      if(this.zoomedto == 'Africa')
+      if(this.zoomedto == 'africa')
         return "#206020"
       else 
         return "#007399"
@@ -708,24 +755,24 @@ export default {
       return Object.entries(this.mapData);
     },
     members() {
-      if (this.zoomedto == "Africa") return this.$store.getters.getAfrica;
+      if (this.zoomedto == 'africa') return this.$store.getters.getAfrica;
       else return this.$store.getters.getSudAmerica;
     },
     phds() {
-      if (this.zoomedto == "Africa") return this.$store.getters.getPhdAfrica;
+      if (this.zoomedto == 'africa') return this.$store.getters.getPhdAfrica;
       else return this.$store.getters.getPhdSudAmerica;
     },
     alumni() {
-      if (this.zoomedto == "Africa") return this.$store.getters.getAlumniAfrica;
+      if (this.zoomedto == 'africa') return this.$store.getters.getAlumniAfrica;
       else return this.$store.getters.getAlumniSudAmerica;
     },
     chapters() {
-      if (this.zoomedto == "Africa")
+      if (this.zoomedto == 'africa')
         return this.$store.getters.getChaptersAfrica;
       else return this.$store.getters.getChaptersSudAmerica;
     },
     institutes() {
-      if (this.zoomedto == "Africa")
+      if (this.zoomedto == 'africa')
         return this.$store.getters.getInstitutesAfrica;
       else 
         return this.$store.getters.getInstitutesSudAmerica;
@@ -733,12 +780,13 @@ export default {
   },
   mounted() {
     this.mapData = this.chapters;
-    this.zoomedto = "Africa";
+    this.zoomedto = "africa";
 
     this.buildMap();
 
     setTimeout(() => {
-      this.goToAfrica();
+      //this.goToAfrica();
+      this.goToArea('africa')
       this.map.setLayoutProperty('sudamerica-labs', 'visibility', 'none')  
     }, 500);
     
